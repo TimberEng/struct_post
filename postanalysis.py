@@ -128,7 +128,7 @@ def coupon_test_analysis (testdata_file_name: str,
     }
     return testdata_file_name[:-4], results
 
-def sample_geodata_read (Excelfile_name: str):
+def coupon_sample_geodata_read (Excelfile_name: str):
     '''
     Reads sample geometric properties from an Excel file.
 
@@ -157,11 +157,11 @@ def sample_geodata_read (Excelfile_name: str):
             continue
         # 取前三列数据
         sample_file_name = str (row[0] + ".csv")
-        sample_name = SampleDetails(row[0], row[1], row[2], sample_file_name)
+        sample_name = coupon_SampleDetails(row[0], row[1], row[2], sample_file_name)
         samples.append(sample_name)
     return samples
 
-def batch_analysis(Coupon_geodata: str,
+def coupon_batch_analysis(Coupon_geodata: str,
                    showfig: bool = True,
                    savefig: bool = False):
     """
@@ -188,11 +188,11 @@ def batch_analysis(Coupon_geodata: str,
     SARS = []
     for Coupon_detail in Coupon_geodata:
         result = coupon_test_analysis(Coupon_detail.sample_file_name, Coupon_detail.thickness, Coupon_detail.width, showfig, savefig)
-        SAR = SampleAnalysisResults(result[0], result[1]['E_MPa'], result[1]['UTS_MPa'], result[1]['Yield_Strength_MPa'])
+        SAR = coupon_SampleAnalysisResults(result[0], result[1]['E_MPa'], result[1]['UTS_MPa'], result[1]['Yield_Strength_MPa'])
         SARS.append(SAR)
     return SARS
 
-def results_save(Excelfile_name: str, analysis_results: list):
+def coupon_results_save(Excelfile_name: str, analysis_results: list):
     """
     Save a list of sample analysis results into an Excel file, matching by sample name.
 
@@ -238,7 +238,7 @@ def results_save(Excelfile_name: str, analysis_results: list):
 
 from dataclasses import dataclass
 @dataclass # this thing is called a "decorator"
-class SampleDetails:
+class coupon_SampleDetails:
     """
     Holds basic information for a sample.
 
@@ -259,7 +259,7 @@ class SampleDetails:
     sample_file_name: str
 
 @dataclass # this thing is called a "decorator"
-class SampleAnalysisResults:
+class coupon_SampleAnalysisResults:
     """
     Stores the analysis results for a sample after mechanical testing.
 
