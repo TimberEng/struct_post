@@ -1,10 +1,44 @@
-def coupon_test_analysis (testdata_file_name: str,
-                 thickness: float = 2.5, 
-                 width: float = 10, 
-                 showfig: bool = True,
-                 savefig: bool = False,
-                 lower_bound: float = 0.1, 
-                 upper_bound: float = 0.3,
+def coupon_csvdata_read(testdata_file_name: str,
+                         force_index: int,
+                         strain_index: int):
+    """
+    Read tensile coupon test data from a CSV file and extract force and strain columns.
+
+    Args:
+        testdata_file_name (str): Path to the CSV file containing the test data.
+        force_index (int): 1-based column index for the force data.
+        strain_index (int): 1-based column index for the strain data.
+
+    Returns:
+        tuple:
+            df_new (pd.DataFrame): DataFrame containing only 'Force' and 'Strain' columns.
+            sample_name (str): Name of the sample extracted from the file name (without extension).
+
+    Notes:
+        - The CSV file is expected to have a header in the first row.
+        - The second row is skipped during reading (`skiprows=[1]`).
+        - The first column is treated as the index column (`index_col=0`).
+        - Force and strain columns are extracted based on the provided 1-based indices.
+    """
+    
+    import pandas as pd
+    df = pd.read_csv(testdata_file_name, skiprows=[1])
+    Force = df[df.columns[force_index - 1]]
+    Strain = df[df.columns[strain_index - 1]]
+    df_new = pd.concat([Force, Strain], axis=1)
+    df_new.columns = ['Force', 'Strain']
+    sample_name = testdata_file_name[:-4]
+    return sample_name, df_new
+
+def coupon_test_analysis (sample_name: str,
+                          Force: float,
+                          Strain: float,
+                          thickness: float = 2.5,
+                          width: float = 10,
+                          showfig: bool = True,
+                          savefig: bool = False,
+                          low_bound: float = 0.1,
+                          up_bound: float = 0.3,
                  ):
     """
     Post-process a tensile coupon test and plot stress-strain curve.
@@ -25,36 +59,27 @@ def coupon_test_analysis (testdata_file_name: str,
     import numpy as np
     import matplotlib.pyplot as plt
     #%matplotlib widget
+    
     # Constants
-    thickness # mm
-    width # mm
     area = thickness * width  # Calculate the area of the specimen
     
     # Load tensile test data
-    df = pd.read_csv(testdata_file_name, header=[0])
-    
-    #df.columns = [f"{col[0]} {col[1]}" for col in df.columns]
-    
-    # Extract relevant columns
-    #time = df["Time (sec)"]
-    #displacement = df["Crosshead separation (mm)"]
-    force = df[df.columns[1]]
-    elongation = df[df.columns[2]]
-    strain = elongation # Strain in mm/mm
+
+    strain = Strain # Strain in mm/mm
     
     # Calculate stress and strain
-    force = force * 1000 # Convert kN to N
+    force = Force * 1000 # Convert kN to N
     stress = (force / area)  # N/m^2 or Pa
     uts = stress.max()
     
     #find the data before uts
     idx_peak = np.argmax(stress)
-    strain_up = strain[:idx_peak+1]
+    strain_up = Strain[:idx_peak+1]
     stress_up = stress[:idx_peak+1]
     
     #Boundary for 20% - 50% of UTS
-    lower_bound = 0.1 * uts
-    upper_bound = 0.3 * uts
+    lower_bound = low_bound * uts
+    upper_bound = up_bound * uts
     
     elastic_reg = (lower_bound <= stress_up) & (stress_up <= upper_bound)
     
@@ -67,7 +92,7 @@ def coupon_test_analysis (testdata_file_name: str,
     #print(f"Intercept: {intercept} MPa")
    
     # Select over 30% of UTS, as yield stress will over 30% uts
-    strain_new = elongation
+    strain_new = strain
     stress_new = force / area
     mask = (lower_bound <= stress)
     strain_mask = strain_new[mask]
@@ -78,7 +103,7 @@ def coupon_test_analysis (testdata_file_name: str,
 
     #Find the Yield strength
     diff = stress_mask - offset_line
-    cross_index = np.where(diff <= 0)[0][0] 
+    cross_index = np.where(diff <= 0)[0][0] +1
     x1 = strain_mask[cross_index-1]
     x2 = strain_mask[cross_index]
     y1 = diff[cross_index-1]
@@ -98,7 +123,7 @@ def coupon_test_analysis (testdata_file_name: str,
     
     ax.set_xlabel('Strain (mm/mm)')
     ax.set_ylabel('Stress (MPa)')
-    ax.set_title(testdata_file_name[:-4]+' Stress-Strain Curve with Mechanical Properties')
+    ax.set_title(sample_name + ' Stress-Strain Curve with Mechanical Properties')
     ax.legend()
     ax.grid(True)
     ax.set_ylim(0, 1.2 *uts)
@@ -111,10 +136,10 @@ def coupon_test_analysis (testdata_file_name: str,
 
     # Save fig or not
     if savefig == True:
-        fig.savefig(testdata_file_name[:-4], dpi=300, bbox_inches='tight')
+        fig.savefig(sample_name, dpi=300, bbox_inches='tight')
     
     # Print results
-    print(f"Sample: {testdata_file_name[:-4]}")
+    print(f"Sample: {sample_name}")
     print(f"Young's Modulus (E): {E:.2f} MPa")
     print(f"Ultimate Tensile Strength (UTS): {uts:.2f} MPa")
     print(f"Yield Strength: {yield_strength:.2f} MPa")
@@ -126,7 +151,7 @@ def coupon_test_analysis (testdata_file_name: str,
         "UTS_MPa": uts,
         "Yield_Strength_MPa": yield_strength
     }
-    return testdata_file_name[:-4], results
+    return sample_name, results
 
 def coupon_sample_geodata_read (Excelfile_name: str):
     '''
@@ -155,15 +180,16 @@ def coupon_sample_geodata_read (Excelfile_name: str):
     for row in ws.iter_rows(min_row=2, values_only=True):  
         if all(cell is None for cell in row):  # skip empty
             continue
-        # 取前三列数据
         sample_file_name = str (row[0] + ".csv")
         sample_name = coupon_SampleDetails(row[0], row[1], row[2], sample_file_name)
         samples.append(sample_name)
     return samples
 
 def coupon_batch_analysis(Coupon_geodata: str,
-                   showfig: bool = True,
-                   savefig: bool = False):
+                          force_index: float,
+                          strain_index:float,
+                          showfig: bool = True,
+                          savefig: bool = False):
     """
     Perform batch analysis on a list of samples and return the results.
 
@@ -187,7 +213,14 @@ def coupon_batch_analysis(Coupon_geodata: str,
     """
     SARS = []
     for Coupon_detail in Coupon_geodata:
-        result = coupon_test_analysis(Coupon_detail.sample_file_name, Coupon_detail.thickness, Coupon_detail.width, showfig, savefig)
+        csvdata = coupon_csvdata_read(Coupon_detail.sample_file_name,force_index,strain_index)
+        result = coupon_test_analysis(Coupon_detail.sample_file_name[:-4], 
+                                      csvdata[1]['Force'],
+                                      csvdata[1]['Strain'],
+                                      Coupon_detail.thickness, 
+                                      Coupon_detail.width, 
+                                      showfig, 
+                                      savefig)
         SAR = coupon_SampleAnalysisResults(result[0], result[1]['E_MPa'], result[1]['UTS_MPa'], result[1]['Yield_Strength_MPa'])
         SARS.append(SAR)
     return SARS
