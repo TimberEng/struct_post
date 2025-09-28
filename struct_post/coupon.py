@@ -69,7 +69,7 @@ def coupon_test_analysis (sample_name: str,
     
     # Calculate stress and strain
     force = Force * 1000 # Convert kN to N
-    stress = (force / area)  # N/m^2 or Pa
+    stress = (force / area)  # N/mm^2 or MPa
     uts = stress.max()
     
     #find the data before uts
@@ -77,7 +77,7 @@ def coupon_test_analysis (sample_name: str,
     strain_up = Strain[:idx_peak+1]
     stress_up = stress[:idx_peak+1]
     
-    #Boundary for 20% - 50% of UTS
+    #Boundary for [low bound] - [up bound] of uts
     lower_bound = low_bound * uts
     upper_bound = up_bound * uts
     
@@ -91,7 +91,7 @@ def coupon_test_analysis (sample_name: str,
     E_GPa = E / 1000  # Convert MPa to GPa
     #print(f"Intercept: {intercept} MPa")
    
-    # Select over 30% of UTS, as yield stress will over 30% uts
+    # Select over [lower bound] of UTS, as yield stress will over [lower bound] uts
     strain_new = strain
     stress_new = force / area
     mask = (lower_bound <= stress)
@@ -191,25 +191,39 @@ def coupon_batch_analysis(Coupon_geodata: str,
                           showfig: bool = True,
                           savefig: bool = False):
     """
-    Perform batch analysis on a list of samples and return the results.
+    Perform batch analysis on a list of tensile coupon samples and return their results.
 
     Parameters
     ----------
-    Coupon_geodata : list
+    Coupon_geodata : list of SampleDetails
         A list of SampleDetails objects, each containing:
-        - sample_file_name : Name of the sample file
-        - thickness        : Sample thickness
-        - width            : Sample width
+        - sample_file_name : str
+            Path to the sample CSV file.
+        - thickness : float
+            Sample thickness (mm).
+        - width : float
+            Sample width (mm).
+    force_index : int
+        Column index of the Force data in the CSV file (1-based).
+    strain_index : int
+        Column index of the Strain data in the CSV file (1-based).
+    showfig : bool, optional
+        Whether to display stress-strain plots during analysis. Default is True.
     savefig : bool, optional
-        Whether to save the figures generated during analysis. Default is False.
+        Whether to save the stress-strain plots to files. Default is False.
 
     Returns
     -------
-    list
+    list of SampleAnalysisResults
         A list of SampleAnalysisResults objects, each containing:
-        - modulus_of_elasticity       : Elastic modulus (E_GPa)
-        - ultimate_tensile_strength   : Ultimate tensile strength (UTS_MPa)
-        - yield_Strength              : Yield strength (Yield_Strength_MPa)
+        - sample_name : str
+            Name of the processed sample.
+        - modulus_of_elasticity : float
+            Elastic modulus (E_GPa).
+        - ultimate_tensile_strength : float
+            Ultimate tensile strength (UTS_MPa).
+        - yield_strength : float
+            Yield strength (Yield_Strength_MPa).
     """
     SARS = []
     for Coupon_detail in Coupon_geodata:
@@ -270,7 +284,7 @@ def coupon_results_save(Excelfile_name: str, analysis_results: list):
     print('The coupon test data analysis is complete.')
 
 from dataclasses import dataclass
-@dataclass # this thing is called a "decorator"
+@dataclass
 class coupon_SampleDetails:
     """
     Holds basic information for a sample.
@@ -291,7 +305,7 @@ class coupon_SampleDetails:
     thickness: float
     sample_file_name: str
 
-@dataclass # this thing is called a "decorator"
+@dataclass
 class coupon_SampleAnalysisResults:
     """
     Stores the analysis results for a sample after mechanical testing.
