@@ -5,14 +5,27 @@
 
 # struct_post
 
+<!-- import README file
 ```{include} ../../README.md
-```
+``` -->
 
 ```{warning}
 This library is under heavy developmemt.
 ```
 
-## Coupon
+Contents:
+
+## Installation
+
+### Required Depedencies
+
+### Instructions
+
+## Tutorials
+
+### Coupon
+
+### Beam
 
 ```{toctree}
 :caption: 'Contents:'
