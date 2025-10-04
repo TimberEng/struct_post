@@ -3,11 +3,16 @@
 % You can adapt this file completely to your liking, but it should at least
 % contain the root `toctree` directive.
 
-# struct_post documentation
+# struct_post
 
-Add your content using `reStructuredText` syntax. See the
-[reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html)
-documentation for details.
+```{include} ../../README.md
+```
+
+```{warning}
+This library is under heavy developmemt.
+```
+
+## Coupon
 
 ```{toctree}
 :caption: 'Contents:'
