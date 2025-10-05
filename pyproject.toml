@@ -6,9 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "matplotlib>=3.10.6",
-    "myst-parser>=4.0.1",
     "openpyxl>=3.1.5",
     "pandas>=2.3.2",
-    "pydata-sphinx-theme>=0.16.1",
     "requests>=2.32.5",
 ]
