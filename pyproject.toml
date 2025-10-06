@@ -1,6 +1,6 @@
 [project]
 name = "struct_post"
-version = "0.1.8"
+version = "0.1.8.1"
 description = "A module designed to analyse common structural test results."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -19,3 +19,8 @@ doc = [
     "pydata-sphinx-theme>=0.16.1",
     "ipykernel>=6.30.1"
 ]
+
+[project.urls]
+Homepage = "https://github.com/TimberEng/struct_post"
+Documentation = "https://struct-post.readthedocs.io/en/latest/"
+Source = "https://github.com/TimberEng/struct_post"
