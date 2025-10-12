@@ -2169,7 +2169,7 @@ wheels = [
 
 [[package]]
 name = "struct-post"
-version = "0.1.8.1"
+version = "0.1.8.3"
 source = { virtual = "." }
 dependencies = [
     { name = "ipympl" },
