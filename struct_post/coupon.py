@@ -4,22 +4,30 @@ def coupon_csvdata_read(testdata_file_name: str,
     """
     Read tensile coupon test data from a CSV file and extract force and strain columns.
 
-    Args:
-        testdata_file_name (str): Path to the CSV file containing the test data.
-        force_index (int): 1-based column index for the force data.
-        strain_index (int): 1-based column index for the strain data.
+    Parameters
+    ----------
+    testdata_file_name : str
+        Path to the CSV file containing the test data.
+    force_index : int
+        1-based column index for the force data.
+    strain_index : int
+        1-based column index for the strain data.
 
-    Returns:
-        tuple:
-            df_new (pd.DataFrame): DataFrame containing only 'Force' and 'Strain' columns.
-            sample_name (str): Name of the sample extracted from the file name (without extension).
+    Returns
+    -------
+    sample_name : str
+        Name of the sample extracted from the file name.
+    df_new : pd.DataFrame
+        DataFrame containing only 'Force' and 'Strain' columns.
 
-    Notes:
-        - The CSV file is expected to have a header in the first row.
-        - The second row is skipped during reading (`skiprows=[1]`).
-        - The first column is treated as the index column (`index_col=0`).
-        - Force and strain columns are extracted based on the provided 1-based indices.
+    Notes
+    -----
+    - CSV must have a header in the first row; second row is skipped.
+    - First column is treated as index.
+    - Force and strain columns are extracted based on 1-based indices.
+
     """
+
     
     import pandas as pd
     df = pd.read_csv(testdata_file_name, skiprows=[1])
@@ -195,36 +203,42 @@ def coupon_batch_analysis(Coupon_geodata: str,
 
     Parameters
     ----------
-    Coupon_geodata : list of SampleDetails
+    
+    Coupon_geodata : list of coupon_SampleDetails
+
         A list of SampleDetails objects, each containing:
         - sample_file_name : str
             Path to the sample CSV file.
         - thickness : float
             Sample thickness (mm).
         - width : float
-            Sample width (mm).
+            Sample width (mm)
+
     force_index : int
-        Column index of the Force data in the CSV file (1-based).
+        Column index of the Force data in the CSV file (1-based)
     strain_index : int
-        Column index of the Strain data in the CSV file (1-based).
+        Column index of the Strain data in the CSV file (1-based)
     showfig : bool, optional
-        Whether to display stress-strain plots during analysis. Default is True.
+        Whether to display stress-strain plots. Default is True
     savefig : bool, optional
-        Whether to save the stress-strain plots to files. Default is False.
+        Whether to save the stress-strain plots. Default is False
 
     Returns
     -------
-    list of SampleAnalysisResults
+    list of coupon_SampleAnalysisResults
         A list of SampleAnalysisResults objects, each containing:
+
         - sample_name : str
-            Name of the processed sample.
+            Name of the processed sample
         - modulus_of_elasticity : float
-            Elastic modulus (E_GPa).
+            Elastic modulus (E_GPa)
         - ultimate_tensile_strength : float
-            Ultimate tensile strength (UTS_MPa).
+            Ultimate tensile strength (UTS_MPa)
         - yield_strength : float
-            Yield strength (Yield_Strength_MPa).
+            Yield strength (Yield_Strength_MPa)
+
     """
+    
     SARS = []
     for Coupon_detail in Coupon_geodata:
         csvdata = coupon_csvdata_read(Coupon_detail.sample_file_name,force_index,strain_index)

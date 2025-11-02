@@ -13,7 +13,7 @@
 This library is under heavy developmemt.
 ```
 
-Contents:
+<!--Contents:
 
 ## Installation
 
@@ -25,12 +25,13 @@ Contents:
 
 ### Coupon
 
-### Beam
+### Beam-->
 
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
 
 coupon
+beam
 notebooks/tutorial
 ```
